@@ -27,30 +27,32 @@ function setMap(){
         .projection(projection);
 
   var promises = [d3.csv("data/chicagoCensus.csv"),
-                  d3.json("data/chicagoCensusTopoJSON.json")
+                  d3.json("data/chicagoCensusTopoJSON.json"),
+                  d3.json("data/usaTopo.json")
                 ];
   Promise.all(promises).then(callback);
 
   function callback(data){
     csvData = data[0];
     chicagoZIP = data[1];
+    usa = data[2];
     var chicagoZIPcodes = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus)
     console.log(chicagoZIPcodes)
+    console.log(usa)
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus)
-
+    var usa = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k)
     //add Europe countries to map
-    var chicagobase = map.append("path")
-      .datum(chicago)
-      .attr("class", "chicago")
+    var base = map.append("path")
+      .datum(usa)
+      .attr("class", "base")
       .attr("d", path);
 
-
     var zips = map.selectAll(".zips")
-    .data(chicagoZIPcodes)
+    .data(chicagoZIP)
     .enter()
     .append("path")
     .attr("class", function(d){
-        return "zips" + d.properties.tractce10;
+        return "zips " + d.properties.tractce10;
     })
     .attr("d", path);
 };
