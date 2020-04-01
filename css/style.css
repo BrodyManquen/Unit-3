@@ -15,8 +15,13 @@
   font-size: 1.5em;
   font-weight: bold;
 }
-.chicago {
-    fill: #CCC;
+.tract {
+    fill: #212;
+    stroke: #CCC;
+    stroke-width: 0.5px;
+}
+.base {
+    fill: #111;
     stroke: #CCC;
     stroke-width: 0.5px;
 }
