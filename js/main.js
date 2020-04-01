@@ -12,7 +12,9 @@ function setMap(){
   function callback(data){
     csvData = data[0];
     chicagoZIP = data[1];
-    console.log(csvData);
-    console.log(chicagoZIP);
+    //console.log(csvData);
+    //console.log(chicagoZIP);
+    var chicagoZIPcodes = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus)
+    console.log(chicagoZIPcodes)
 };
 }
