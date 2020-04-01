@@ -15,7 +15,7 @@ function setMap(){
       .attr("width", width)
       .attr("height", height);
 
-      //create Albers equal area conic projection centered on France
+      //create Albers equal area conic projection centered on Chicago
   var projection = d3.geoAlbers()
         .center([-86.95, 41.9])
         .rotate([1,0])
@@ -36,23 +36,20 @@ function setMap(){
     csvData = data[0];
     chicagoZIP = data[1];
     usa = data[2];
-    var chicagoZIPcodes = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus)
-    console.log(chicagoZIPcodes)
-    console.log(usa)
-    var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus)
-    var usa = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k)
-    //add Europe countries to map
-    var base = map.append("path")
-      .datum(usa)
+    var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
+    var usaBase = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k)
+    //add Chicago tracts countries to map
+    var base = map.append("path") //US State basemap
+      .datum(usaBase)
       .attr("class", "base")
       .attr("d", path);
 
-    var zips = map.selectAll(".zips")
-    .data(chicagoZIP)
+    var tract = map.selectAll(".tract")  //Census Tract shapes and bounds
+    .data(chicago)
     .enter()
     .append("path")
     .attr("class", function(d){
-        return "zips " + d.properties.tractce10;
+        return "tract " + d.properties.name10;  //names after census tract
     })
     .attr("d", path);
 };
