@@ -16,12 +16,23 @@
   font-weight: bold;
 }
 .tract {
-    fill: #212;
+    fill: #999;
+    stroke: #222;
+    stroke-width: 0.25px;
+}
+.base {
+    fill: #222;
     stroke: #CCC;
     stroke-width: 0.5px;
 }
-.base {
-    fill: #111;
-    stroke: #CCC;
-    stroke-width: 0.5px;
+.gratLines {
+    fill: none;
+    stroke: #999;
+    stroke-width: 1px;
+}
+.gratBackground {
+    fill: #D5E3FF;
+}
+.map {
+    border: medium solid #999;
 }
