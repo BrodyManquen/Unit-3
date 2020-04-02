@@ -27,7 +27,7 @@ function setMap(){
         .projection(projection);
 
   var promises = [d3.csv("data/chicagoCensus.csv"),
-                  d3.json("data/chicagoCensusTopoJSON.json"),
+                  d3.json("data/chicagoTopo.json"),
                   d3.json("data/usaTopo.json")
                 ];
   Promise.all(promises).then(callback);
