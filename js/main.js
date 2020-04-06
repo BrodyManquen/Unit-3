@@ -1,6 +1,10 @@
 //Main.js for D3 Lab
 //Brody W. Manquen 3/11/2020
-
+//First line of main.js...wrap everything in a self-executing anonymous function to move to local scope
+(function(){
+//pseudo-global variables
+var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"]; //list of attributes
+var expressed = attrArray[0]; //initial attribute
 window.onload = setMap();
 
 function setMap(){
@@ -36,30 +40,24 @@ function setMap(){
     csvData = data[0];
     chicagoZIP = data[1];
     usa = data[2];
+
+    setGraticule(map, path);
+
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
-    var usaBase = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k)
+    var usaBase = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k) //converts usa Basemap to geoJSON
 
-    //variables for data join
-    var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"];
-
-  //add Chicago tracts countries to map
-
+    //Add basemap and Chicago tracts to map
     var base = map.append("path") //US State basemap
         .datum(usaBase)
         .attr("class", "base")
         .attr("d", path);
-
-    var tract = map.selectAll(".tract")  //Census Tract shapes and bounds
-      .data(chicago)
-      .enter()
-      .append("path")
-      .attr("class", function(d){
-          return "tract " + d.properties.name10;  //names after census tract
-      })
-      .attr("d", path);
+    //join csv data to geojson enum units
+    chicago = joinData(chicago, csvData);
+    //add enumeration units (Chicago Census Tracts)
+    setEnumerationUnits(chicago, map, path);
+  };
 };
-}
-
+//creates Map graticule
 function setGraticule(map, path){
   var graticule = d3.geoGraticule()
       .step([0.25,0.25]);  // place graticule line every 5 degrees
@@ -78,7 +76,7 @@ function setGraticule(map, path){
       .attr("class", "gratLines") //assign class for styling
       .attr("d", path); //project graticule lines
 };
-
+//joins attribute csv and geoJSON tract data
 function joinData(chicago, csvData){
 //loop through csv to assign each set of csv attribute values to geojson region
   for (var i=0; i<csvData.length; i++){
@@ -95,10 +93,23 @@ function joinData(chicago, csvData){
           attrArray.forEach(function(attr){
               var val = parseFloat(csvTract[attr]); //get csv attribute value
               geojsonProps[attr] = val; //assign attribute and value to geojson properties
-    console.log(geojsonProps)
           });
       };
   };
   };
   return chicago;
 };
+//draws topoJSON enumeration units for chicago census tracts
+function setEnumerationUnits(chicago, map, path){
+  //add USA basemap and Chicago Census Tracts to map
+  var tract = map.selectAll(".tract")  //Census Tract shapes and bounds
+    .data(chicago)
+    .enter()
+    .append("path")
+    .attr("class", function(d){
+        return "tract " + d.properties.name10;  //names after census tract
+    })
+    .attr("d", path);
+};
+
+})();
