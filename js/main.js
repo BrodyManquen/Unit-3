@@ -53,6 +53,8 @@ function setMap(){
         .attr("d", path);
     //join csv data to geojson enum units
     chicago = joinData(chicago, csvData);
+    //create the color scale
+    var colorScale = makeColorScale(csvData);
     //add enumeration units (Chicago Census Tracts)
     setEnumerationUnits(chicago, map, path);
   };
@@ -111,5 +113,27 @@ function setEnumerationUnits(chicago, map, path){
     })
     .attr("d", path);
 };
+//function to create color scale Generator
+function makeColorScale(data){
+  var colorClasses = [
+    "#D4B9DA",
+    "#C994C7",
+    "#DF65B0",
+    "#DD1C77",
+    "#980043"
+  ];
+  //create color scale Generator
+  var colorScale = d3.scaleQuantile()
+    .range(colorClasses);
 
+    //build two-value array of minimum and maximum expressed attribute values
+    var minmax = [
+        d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+        d3.max(data, function(d) { return parseFloat(d[expressed]); })
+    ];
+    //assign array of expressed values as scale domain
+    colorScale.domain(minmax);
+    console.log(colorScale.quantiles())
+    return colorScale;
+}
 })();
