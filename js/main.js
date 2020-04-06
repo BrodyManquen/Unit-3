@@ -4,7 +4,7 @@
 (function(){
 //pseudo-global variables
 var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"]; //list of attributes
-var expressed = attrArray[0]; //initial attribute
+var expressed = attrArray[30]; //initial attribute
 window.onload = setMap();
 
 function setMap(){
@@ -56,7 +56,7 @@ function setMap(){
     //create the color scale
     var colorScale = makeColorScale(csvData);
     //add enumeration units (Chicago Census Tracts)
-    setEnumerationUnits(chicago, map, path);
+    setEnumerationUnits(chicago, map, path, colorScale);
   };
 };
 //creates Map graticule
@@ -83,12 +83,12 @@ function joinData(chicago, csvData){
 //loop through csv to assign each set of csv attribute values to geojson region
   for (var i=0; i<csvData.length; i++){
     var csvTract = csvData[i]; //the current region
-    var csvKey = csvTract.tractce10; //the CSV primary key
+    var csvKey = csvTract.name10; //the CSV primary key
 
   //loop through geojson regions to find correct region
   for (var a=0; a<chicago.length; a++){
       var geojsonProps = chicago[a].properties; //the current region geojson properties
-      var geojsonKey = geojsonProps.tractce10; //the geojson primary key
+      var geojsonKey = geojsonProps.name10; //the geojson primary key
       //where primary keys match, transfer csv data to geojson properties object
       if (geojsonKey == csvKey){
           //assign all attributes and values
@@ -102,7 +102,7 @@ function joinData(chicago, csvData){
   return chicago;
 };
 //draws topoJSON enumeration units for chicago census tracts
-function setEnumerationUnits(chicago, map, path){
+function setEnumerationUnits(chicago, map, path, colorScale){
   //add USA basemap and Chicago Census Tracts to map
   var tract = map.selectAll(".tract")  //Census Tract shapes and bounds
     .data(chicago)
@@ -111,7 +111,10 @@ function setEnumerationUnits(chicago, map, path){
     .attr("class", function(d){
         return "tract " + d.properties.name10;  //names after census tract
     })
-    .attr("d", path);
+    .attr("d", path)
+    .style("fill", function(d){
+      return colorScale(d.properties[expressed]);
+    });
 };
 //function to create color scale Generator
 function makeColorScale(data){
