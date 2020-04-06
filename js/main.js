@@ -41,45 +41,8 @@ function setMap(){
 
     //variables for data join
     var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"];
-    //loop through csv to assign each set of csv attribute values to geojson region
-    for (var i=0; i<csvData.length; i++){
-      var csvTract = csvData[i]; //the current region
-      var csvKey = csvTract.tractce10; //the CSV primary key
-
-    //loop through geojson regions to find correct region
-    for (var a=0; a<chicago.length; a++){
-        var geojsonProps = chicago[a].properties; //the current region geojson properties
-        var geojsonKey = geojsonProps.tractce10; //the geojson primary key
-        //where primary keys match, transfer csv data to geojson properties object
-        if (geojsonKey == csvKey){
-            //assign all attributes and values
-            attrArray.forEach(function(attr){
-                var val = parseFloat(csvTract[attr]); //get csv attribute value
-                geojsonProps[attr] = val; //assign attribute and value to geojson properties
-      console.log(geojsonProps)
-            });
-        };
-    };
-};
 
   //add Chicago tracts countries to map
-    //graticule
-    var graticule = d3.geoGraticule()
-      .step([0.25,0.25]);  // place graticule line every 5 degrees
-
-      //create graticule background
-  var gratBackground = map.append("path")
-      .datum(graticule.outline()) //bind graticule background
-      .attr("class", "gratBackground") //assign class for styling
-      .attr("d", path) //project graticule
-
-      //create graticule lines
-  var gratLines = map.selectAll(".gratLines") //select graticule elements that will be created
-      .data(graticule.lines()) //bind graticule lines to each element to be created
-      .enter() //create an element for each datum
-      .append("path") //append each element to the svg as a path element
-      .attr("class", "gratLines") //assign class for styling
-      .attr("d", path); //project graticule lines
 
     var base = map.append("path") //US State basemap
         .datum(usaBase)
@@ -96,3 +59,46 @@ function setMap(){
       .attr("d", path);
 };
 }
+
+function setGraticule(map, path){
+  var graticule = d3.geoGraticule()
+      .step([0.25,0.25]);  // place graticule line every 5 degrees
+
+      //create graticule background
+  var gratBackground = map.append("path")
+      .datum(graticule.outline()) //bind graticule background
+      .attr("class", "gratBackground") //assign class for styling
+      .attr("d", path) //project graticule
+
+      //create graticule lines
+  var gratLines = map.selectAll(".gratLines") //select graticule elements that will be created
+      .data(graticule.lines()) //bind graticule lines to each element to be created
+      .enter() //create an element for each datum
+      .append("path") //append each element to the svg as a path element
+      .attr("class", "gratLines") //assign class for styling
+      .attr("d", path); //project graticule lines
+};
+
+function joinData(chicago, csvData){
+//loop through csv to assign each set of csv attribute values to geojson region
+  for (var i=0; i<csvData.length; i++){
+    var csvTract = csvData[i]; //the current region
+    var csvKey = csvTract.tractce10; //the CSV primary key
+
+  //loop through geojson regions to find correct region
+  for (var a=0; a<chicago.length; a++){
+      var geojsonProps = chicago[a].properties; //the current region geojson properties
+      var geojsonKey = geojsonProps.tractce10; //the geojson primary key
+      //where primary keys match, transfer csv data to geojson properties object
+      if (geojsonKey == csvKey){
+          //assign all attributes and values
+          attrArray.forEach(function(attr){
+              var val = parseFloat(csvTract[attr]); //get csv attribute value
+              geojsonProps[attr] = val; //assign attribute and value to geojson properties
+    console.log(geojsonProps)
+          });
+      };
+  };
+  };
+  return chicago;
+};
