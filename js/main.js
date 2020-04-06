@@ -38,6 +38,30 @@ function setMap(){
     usa = data[2];
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
     var usaBase = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k)
+
+    //variables for data join
+    var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"];
+    //loop through csv to assign each set of csv attribute values to geojson region
+    for (var i=0; i<csvData.length; i++){
+      var csvTract = csvData[i]; //the current region
+      var csvKey = csvTract.tractce10; //the CSV primary key
+
+    //loop through geojson regions to find correct region
+    for (var a=0; a<chicago.length; a++){
+        var geojsonProps = chicago[a].properties; //the current region geojson properties
+        var geojsonKey = geojsonProps.tractce10; //the geojson primary key
+        //where primary keys match, transfer csv data to geojson properties object
+        if (geojsonKey == csvKey){
+            //assign all attributes and values
+            attrArray.forEach(function(attr){
+                var val = parseFloat(csvTract[attr]); //get csv attribute value
+                geojsonProps[attr] = val; //assign attribute and value to geojson properties
+      console.log(geojsonProps)
+            });
+        };
+    };
+};
+
   //add Chicago tracts countries to map
     //graticule
     var graticule = d3.geoGraticule()
