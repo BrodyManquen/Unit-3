@@ -134,38 +134,36 @@ function makeColorScale(data){
     "#f2f0f7",
     "#cbc9e2",
     "#9e9ac8",
-    "#756bb1",
-    "#54278f"
+    "#6a51a3"
   ];
   //create color scale Generator
-  var colorScale = d3.scaleThreshold()
+  var colorScale = d3.scaleQuantile()
     .range(colorClasses);
-  //array of all values
-  var domainArray = [];
-  for (var i=0; i<data.length;i++){
-    var val = parseFloat(data[i][expressed]);
-    domainArray.push(val);
-  };
-  //cluster data using ckmeans clustering
-  var clusters = ss.ckmeans(domainArray, 5);
-  //reset domain array to cluster mins
-  domainArray = clusters.map(function(d){
-    return d3.min(d);
-  });
-  //move first val from domain
-  domainArray.shift();
-  colorScale.domain(domainArray);
-  return colorScale;
-    //build two-value array of minimum and maximum expressed attribute values
-    //var minmax = [
-        //d3.min(data, function(d) { return parseFloat(d[expressed]); }),
-      //  d3.max(data, function(d) { return parseFloat(d[expressed]); })
-  //  ];
-    //assign array of expressed values as scale domain
-    //colorScale.domain(minmax);
-    //console.log(colorScale.quantiles())
-    //return colorScale;
-}
+//Natural Breaks -- does not look as meaningful as Quantile
+                  //  var domainArray = [];
+                  //  for (var i=0; i<data.length;i++){
+                  //    var val = parseFloat(data[i][expressed]);
+                  //    domainArray.push(val);
+                  //  };
+                  //cluster data using ckmeans clustering
+                  //  var clusters = ss.ckmeans(domainArray, 4);
+                  //reset domain array to cluster mins
+                  //  domainArray = clusters.map(function(d){
+                  //    return d3.min(d);
+                  //  });
+                    //move first val from domain
+                    //domainArray.shift();
+                  //  colorScale.domain(domainArray);
+                  //  return colorScale;
+//build two-value array of minimum and maximum expressed attribute values
+  var minmax = [
+      d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+      d3.max(data, function(d) { return parseFloat(d[expressed]); })
+  ];
+//assign array of expressed values as scale domain
+  colorScale.domain(minmax);
+  return colorScale;  //sets colorScale
+};
 //create coordianted bar chart
 function setChart(csvData, colorScale){
   //chart frame dimensions
@@ -205,27 +203,27 @@ function setChart(csvData, colorScale){
         .style("fill", function(d){
           return colorScale(d[expressed])
         });
-    var numbers = chart.selectAll(".numbers")
-        .data(csvData)
-        .enter()
-        .append("text")
-        .sort(function(a, b){
-            return a[expressed]-b[expressed]
-        })
-        .attr("class", function(d){
-            return "numbers " + d.name10;
-        })
-        .attr("text-anchor", "middle")
-        .attr("x", function(d, i){
-            var fraction = chartWidth / csvData.length;
-            return i * fraction + (fraction - 1) / 2;
-        })
-        .attr("y", function(d){
-            return chartHeight - yScale(parseFloat(d[expressed])) + 15;
-        })
-        .text(function(d){
-            return d[expressed];
-        });
+    // var numbers = chart.selectAll(".numbers")
+    //     .data(csvData)
+    //     .enter()
+    //     .append("text")
+    //     .sort(function(a, b){
+    //         return a[expressed]-b[expressed]
+    //     })
+    //     .attr("class", function(d){
+    //         return "numbers " + d.name10;
+    //     })
+    //     .attr("text-anchor", "middle")
+    //     .attr("x", function(d, i){
+    //         var fraction = chartWidth / csvData.length;
+    //         return i * fraction + (fraction - 1) / 2;
+    //     })
+    //     .attr("y", function(d){
+    //         return chartHeight - yScale(parseFloat(d[expressed])) + 15;
+    //     })
+    //     .text(function(d){
+    //         return d[expressed];
+    //     });
         //below Example 2.8...create a text element for the chart title
     var chartTitle = chart.append("text")
             .attr("x", 20)
