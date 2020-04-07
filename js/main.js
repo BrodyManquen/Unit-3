@@ -32,25 +32,30 @@ function setMap(){
 
   var promises = [d3.csv("data/chicagoCensus.csv"),
                   d3.json("data/chicagoTopo.json"),
-                  d3.json("data/usaTopo.json")
+                  d3.json("data/ilTopo.json"),
+                  d3.json("data/inTopo.json")
                 ];
   Promise.all(promises).then(callback);
 
   function callback(data){
     csvData = data[0];
     chicagoZIP = data[1];
-    usa = data[2];
-
+    il = data[2];
+    ind = data[3]
     setGraticule(map, path);
 
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
-    var usaBase = topojson.feature(usa, usa.objects.gz_2010_us_040_00_500k) //converts usa Basemap to geoJSON
-
+    var ilBase = topojson.feature(il, il.objects.cb_2015_illinois_county_20m) //converts usa Basemap to geoJSON
+    var indBase = topojson.feature(ind, ind.objects.cb_2015_indiana_county_20m)
     //Add basemap and Chicago tracts to map
     var base = map.append("path") //US State basemap
-        .datum(usaBase)
+        .datum(ilBase, indBase)
         .attr("class", "base")
         .attr("d", path);
+    var indiana = map.append("path") //US State basemap
+          .datum(indBase)
+          .attr("class", "base")
+          .attr("d", path);
     //join csv data to geojson enum units
     chicago = joinData(chicago, csvData);
     //create the color scale
