@@ -9,7 +9,7 @@ window.onload = setMap();
 
 function setMap(){
 
-  var width = 1000,
+  var width = 640,
     height = 800;
 
     //create new svg container for the map
@@ -32,8 +32,7 @@ function setMap(){
 
   var promises = [d3.csv("data/chicagoCensus.csv"),
                   d3.json("data/chicagoTopo.json"),
-                  d3.json("data/ilTopo.json"),
-                  d3.json("data/inTopo.json")
+                  d3.json("data/ilTopo.json")
                 ];
   Promise.all(promises).then(callback);
 
@@ -41,21 +40,16 @@ function setMap(){
     csvData = data[0];
     chicagoZIP = data[1];
     il = data[2];
-    ind = data[3]
+    console.log(il)
     setGraticule(map, path);
 
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
     var ilBase = topojson.feature(il, il.objects.cb_2015_illinois_county_20m) //converts usa Basemap to geoJSON
-    var indBase = topojson.feature(ind, ind.objects.cb_2015_indiana_county_20m)
     //Add basemap and Chicago tracts to map
     var base = map.append("path") //US State basemap
-        .datum(ilBase, indBase)
+        .datum(ilBase)
         .attr("class", "base")
         .attr("d", path);
-    var indiana = map.append("path") //US State basemap
-          .datum(indBase)
-          .attr("class", "base")
-          .attr("d", path);
     //join csv data to geojson enum units
     chicago = joinData(chicago, csvData);
     //create the color scale
@@ -118,7 +112,12 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     })
     .attr("d", path)
     .style("fill", function(d){
-      return colorScale(d.properties[expressed]);
+      var value = d.properties[expressed];
+      if (value){
+        return colorScale(d.properties[expressed]);
+      } else {
+        return "#ccc";
+      }
     });
 };
 //function to create color scale Generator
