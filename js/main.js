@@ -9,7 +9,7 @@ window.onload = setMap();
 
 function setMap(){
 
-  var width = 640,
+  var width = window.innerWidth*0.5,
     height = 800;
 
     //create new svg container for the map
@@ -24,7 +24,7 @@ function setMap(){
         .center([8.25, 41.88205])
         .rotate([92.35,0.5,-4])
         .parallels([40,45])
-        .scale(118000)
+        .scale(99000)
         .translate([width / 2, height / 2]);
 
   var path = d3.geoPath()
@@ -32,7 +32,8 @@ function setMap(){
 
   var promises = [d3.csv("data/chicagoCensus.csv"),
                   d3.json("data/chicagoTopo.json"),
-                  d3.json("data/ilTopo.json")
+                  d3.json("data/ilTopo.json"),
+                  d3.json("data/inTopo.json")
                 ];
   Promise.all(promises).then(callback);
 
@@ -40,22 +41,29 @@ function setMap(){
     csvData = data[0];
     chicagoZIP = data[1];
     il = data[2];
-    console.log(il)
+    ind = data[3];
     setGraticule(map, path);
 
     var chicago = topojson.feature(chicagoZIP, chicagoZIP.objects.chicagoCensus).features  //converts chicagoZIP to geoJSON
     var ilBase = topojson.feature(il, il.objects.cb_2015_illinois_county_20m) //converts usa Basemap to geoJSON
+    var indBase = topojson.feature(ind, ind.objects.cb_2015_indiana_county_20m)
     //Add basemap and Chicago tracts to map
     var base = map.append("path") //US State basemap
         .datum(ilBase)
         .attr("class", "base")
         .attr("d", path);
+    var indiana = map.append("path") //US State basemap
+            .datum(indBase)
+            .attr("class", "base")
+            .attr("d", path);
     //join csv data to geojson enum units
     chicago = joinData(chicago, csvData);
     //create the color scale
     var colorScale = makeColorScale(csvData);
     //add enumeration units (Chicago Census Tracts)
     setEnumerationUnits(chicago, map, path, colorScale);
+    //addChart
+    setChart(csvData, colorScale);
   };
 };
 //creates Map graticule
@@ -142,5 +150,72 @@ function makeColorScale(data){
     colorScale.domain(minmax);
     console.log(colorScale.quantiles())
     return colorScale;
+}
+//create coordianted bar chart
+function setChart(csvData, colorScale){
+  //chart frame dimensions
+  var chartWidth = window.innerWidth * 0.425,
+      chartHeight = 460
+  //2nd svg to hold
+  var chart = d3.select("body")
+    .append("svg")
+    .attr("width", chartWidth)
+    .attr("height", chartHeight)
+    .attr("class", "chart");
+    //create a scale to size bars proportionally to frame
+  var yScale = d3.scaleLinear()
+    .range([0, chartHeight])
+    .domain([0, 1]);
+
+  var bars = chart.selectAll(".bars")
+        .data(csvData)
+        .enter()
+        .append("rect")
+        .sort(function(a,b){
+          return a[expressed]-b[expressed]
+        })
+        .attr("class", function(d){
+            return "bars " + d.name10;
+        })
+        .attr("width", (chartWidth / (csvData.length - 1)))
+        .attr("x", function(d, i){
+            return i * (chartWidth / csvData.length);
+        })
+        .attr("height", function(d){
+          return yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d){
+          return chartHeight - yScale(parseFloat(d[expressed]));
+        })
+        .style("fill", function(d){
+          return colorScale(d[expressed])
+        });
+    var numbers = chart.selectAll(".numbers")
+        .data(csvData)
+        .enter()
+        .append("text")
+        .sort(function(a, b){
+            return a[expressed]-b[expressed]
+        })
+        .attr("class", function(d){
+            return "numbers " + d.name10;
+        })
+        .attr("text-anchor", "middle")
+        .attr("x", function(d, i){
+            var fraction = chartWidth / csvData.length;
+            return i * fraction + (fraction - 1) / 2;
+        })
+        .attr("y", function(d){
+            return chartHeight - yScale(parseFloat(d[expressed])) + 15;
+        })
+        .text(function(d){
+            return d[expressed];
+        });
+        //below Example 2.8...create a text element for the chart title
+    var chartTitle = chart.append("text")
+            .attr("x", 20)
+            .attr("y", 40)
+            .attr("class", "chartTitle")
+            .text(expressed + " Coefficient in each Chicago Census Tract");
 }
 })();
