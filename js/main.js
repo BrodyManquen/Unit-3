@@ -3,8 +3,9 @@
 //First line of main.js...wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 //pseudo-global variables
-var attrArray = ["OwnPercent", "RentPercent","2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"]; //list of attributes
-var expressed = attrArray[32]; //initial attribute
+var attrArray = ["OwnPercent", "%Rented","Gini"]; //list of attributes
+var expressed = attrArray[2]; //initial attribute
+var compared = attrArray[1]
 window.onload = setMap();
 
 function setMap(){
@@ -166,61 +167,78 @@ function makeColorScale(data){
 };
 //create coordianted bar chart
 function setChart(csvData, colorScale){
-  //chart frame dimensions
-  var chartWidth = window.innerWidth * 0.425,
-      chartHeight = 473,
+
+  // set the dimensions and margins of the graph
+  var margin = {top: 20, right: 10, bottom: 60, left: 60};
+  var width = (window.innerWidth * 0.425) - margin.left - margin.right,
+      height = 700 - margin.left - margin.right,
       leftPadding = 25,
       rightPadding = 2,
-      topBottomPadding = 5,
-      chartInnerWidth = chartWidth - leftPadding - rightPadding,
-      chartInnerHeight = chartHeight - topBottomPadding * 2,
-      translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
-  //2nd svg to hold
+      topBottomPadding = 25,
+      chartInnerWidth = width - leftPadding - rightPadding,
+      chartInnerHeight = height - topBottomPadding * 2,
+      translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
+  // append the svg object to the body of the page
   var chart = d3.select("body")
     .append("svg")
-    .attr("width", chartWidth)
-    .attr("height", chartHeight)
+    .attr("width", width)
+    .attr("height", height)
     .attr("class", "chart");
-    //create a scale to size bars proportionally to frame
+    //create a rectangle for chart background fill
+  var chartBackground = chart.append("rect")
+      .attr("class", "chartBackground")
+      .attr("width", chartInnerWidth)
+      .attr("height", chartInnerHeight)
+      .attr("transform", translate);
   var yScale = d3.scaleLinear()
-    .range([0, chartHeight])
-    .domain([0, 1]);
-
-  var bars = chart.selectAll(".bars")
-        .data(csvData)
-        .enter()
-        .append("rect")
-        .sort(function(a,b){
-          return a[expressed]-b[expressed]
-        })
-        .attr("class", function(d){
-            return "bars " + d.name10;
-        })
-        .attr("width", (chartWidth / (csvData.length - 1)))
-        .attr("x", function(d, i){
-            return i * (chartWidth / csvData.length);
-        })
-        .attr("height", function(d){
-          return yScale(parseFloat(d[expressed]));
-        })
-        .attr("y", function(d){
-          return chartHeight - yScale(parseFloat(d[expressed]));
-        })
+            .range([height, 0])
+            .domain([0, 1]);
+  var xScale = d3.scaleLinear()
+            .range([width, 0])
+            .domain([1, 0]);
+  var chartFrame = chart.append("rect")
+      .attr("class", "chartFrame")
+      .attr("width", chartInnerWidth)
+      .attr("height", chartInnerHeight)
+      .attr("transform", translate);
+    // Add X axis
+    var x = d3.scaleLinear()
+      .domain([0, 1])
+      .range([ 0, width ])
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, 1])
+      .range([ height, 0]);
+    // Add dots
+    var dots = chart.selectAll(".dot")
+      .data(csvData)
+      .enter()
+      .append("circle")
+        .attr("cx", function (d) { return x(d[expressed]); } )
+        .attr("cy", function (d) { return y(d[compared]); } )
+        .attr("r", 2.5)
         .style("fill", function(d){
           return colorScale(d[expressed])
         });
-        //create vertical axis generator
-  var yAxis = d3.axisLeft()
-            .scale(yScale);
-  var axis = chart.append("g")
-          .attr("class", "axis")
-          .attr("transform", translate)
-          .call(yAxis)
-        //below Example 2.8...create a text element for the chart title
     var chartTitle = chart.append("text")
-            .attr("x", 20)
-            .attr("y", 40)
-            .attr("class", "chartTitle")
-            .text(expressed + " Coefficient in each Chicago Census Tract");
+        .attr("x", 40)
+        .attr("y", 20)
+        .attr("class", "chartTitle")
+        .text(compared + " Houses vs " + expressed + " Coefficient");
+        //create vertical axis generator
+    var yAxis = d3.axisLeft()
+        .scale(yScale);
+    var xAxis = d3.axisBottom()
+        .scale(xScale);
+        //place axis
+    var yAx = chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+    var xAx = chart.append("g")
+            .attr("class", "axis")
+            .attr("transform", translate)
+            .call(xAxis);
+
 }
 })();
