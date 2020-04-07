@@ -22,7 +22,6 @@
 }
 .base {
     fill: #222;
-    stroke: #CCC;
     stroke-width: 0.5px;
 }
 .gratLines {
@@ -36,4 +35,9 @@
 .map {
     background: #D5E3FF;
     border: medium solid #999;
+}
+.tract {
+  stroke: #000;
+  stroke-width: 0.5px;
+  stroke-linecap: round;
 }
