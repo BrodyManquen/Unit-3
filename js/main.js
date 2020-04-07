@@ -130,26 +130,41 @@ function setEnumerationUnits(chicago, map, path, colorScale){
 };
 //function to create color scale Generator
 function makeColorScale(data){
-  var colorClasses = [
-    "#D4B9DA",
-    "#C994C7",
-    "#DF65B0",
-    "#DD1C77",
-    "#980043"
+  var colorClasses = [  //Made from ColorBrewer (purple)
+    "#f2f0f7",
+    "#cbc9e2",
+    "#9e9ac8",
+    "#756bb1",
+    "#54278f"
   ];
   //create color scale Generator
-  var colorScale = d3.scaleQuantile()
+  var colorScale = d3.scaleThreshold()
     .range(colorClasses);
-
+  //array of all values
+  var domainArray = [];
+  for (var i=0; i<data.length;i++){
+    var val = parseFloat(data[i][expressed]);
+    domainArray.push(val);
+  };
+  //cluster data using ckmeans clustering
+  var clusters = ss.ckmeans(domainArray, 5);
+  //reset domain array to cluster mins
+  domainArray = clusters.map(function(d){
+    return d3.min(d);
+  });
+  //move first val from domain
+  domainArray.shift();
+  colorScale.domain(domainArray);
+  return colorScale;
     //build two-value array of minimum and maximum expressed attribute values
-    var minmax = [
-        d3.min(data, function(d) { return parseFloat(d[expressed]); }),
-        d3.max(data, function(d) { return parseFloat(d[expressed]); })
-    ];
+    //var minmax = [
+        //d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+      //  d3.max(data, function(d) { return parseFloat(d[expressed]); })
+  //  ];
     //assign array of expressed values as scale domain
-    colorScale.domain(minmax);
-    console.log(colorScale.quantiles())
-    return colorScale;
+    //colorScale.domain(minmax);
+    //console.log(colorScale.quantiles())
+    //return colorScale;
 }
 //create coordianted bar chart
 function setChart(csvData, colorScale){
