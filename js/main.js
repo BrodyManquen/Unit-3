@@ -3,8 +3,8 @@
 //First line of main.js...wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 //pseudo-global variables
-var attrArray = ["2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"]; //list of attributes
-var expressed = attrArray[30]; //initial attribute
+var attrArray = ["OwnPercent", "RentPercent","2More", "2MoreOwn", "2MoreRent", "35-44", "35-44Own","35-44Rent","45-54","45-54Own","45-54Rent","55-64","55-64Own","55-64Rent","65-74","65-74Own","65-74Rent","75-84","75-84Own","75-84Rent","85over","85overOwn","85overRent","AmInd","AmIndOwn","AmIndRent","Asian","AsianOwn","AsianRent","Black","BlackOwn","BlackRent","Gini","Hispanic","HispanicOwn","HispanicRent","NatHaw","NatHawOwn","NatHawRent","Other","OtherOwn","Own","Rent","White","WhiteOwn", "WhiteRent", "allHouse", "under35", "under35Own", "under35Rent"]; //list of attributes
+var expressed = attrArray[32]; //initial attribute
 window.onload = setMap();
 
 function setMap(){
@@ -168,7 +168,13 @@ function makeColorScale(data){
 function setChart(csvData, colorScale){
   //chart frame dimensions
   var chartWidth = window.innerWidth * 0.425,
-      chartHeight = 460
+      chartHeight = 473,
+      leftPadding = 25,
+      rightPadding = 2,
+      topBottomPadding = 5,
+      chartInnerWidth = chartWidth - leftPadding - rightPadding,
+      chartInnerHeight = chartHeight - topBottomPadding * 2,
+      translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
   //2nd svg to hold
   var chart = d3.select("body")
     .append("svg")
@@ -203,27 +209,13 @@ function setChart(csvData, colorScale){
         .style("fill", function(d){
           return colorScale(d[expressed])
         });
-    // var numbers = chart.selectAll(".numbers")
-    //     .data(csvData)
-    //     .enter()
-    //     .append("text")
-    //     .sort(function(a, b){
-    //         return a[expressed]-b[expressed]
-    //     })
-    //     .attr("class", function(d){
-    //         return "numbers " + d.name10;
-    //     })
-    //     .attr("text-anchor", "middle")
-    //     .attr("x", function(d, i){
-    //         var fraction = chartWidth / csvData.length;
-    //         return i * fraction + (fraction - 1) / 2;
-    //     })
-    //     .attr("y", function(d){
-    //         return chartHeight - yScale(parseFloat(d[expressed])) + 15;
-    //     })
-    //     .text(function(d){
-    //         return d[expressed];
-    //     });
+        //create vertical axis generator
+  var yAxis = d3.axisLeft()
+            .scale(yScale);
+  var axis = chart.append("g")
+          .attr("class", "axis")
+          .attr("transform", translate)
+          .call(yAxis)
         //below Example 2.8...create a text element for the chart title
     var chartTitle = chart.append("text")
             .attr("x", 20)
