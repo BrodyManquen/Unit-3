@@ -33,16 +33,17 @@
 .gratBackground {
     fill: #D5E3FF;
 }
+.chartBackground {
+    fill: rgba(128,128,128,.2);
+}
 .map {
     background: #D5E3FF;
     border: medium solid #999;
     margin: 10px 0 0 20px;
 }
 .chart {
-  background-color: rgba(128,128,128,0.2);
-  border: medium solid #999;
-  float: right;
-  margin: 10px 20px 0 0;
+    float: right;
+    margin: 7px 20px 0 0;
 }
 .tract {
   stroke: #000;
@@ -52,5 +53,11 @@
 .chartTitle {
   font-family: sans-sans-serif;
   font-size: 1.5em;
-  font-weight: bold;
+  font-weight: normal;
+}
+.chartFrame {
+    fill: none;
+    stroke: #999;
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
 }
