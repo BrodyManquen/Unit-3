@@ -9,8 +9,8 @@ window.onload = setMap();
 
 function setMap(){
 
-  var width = 600,
-    height = 460;
+  var width = 1000,
+    height = 800;
 
     //create new svg container for the map
   var map = d3.select("body")
@@ -19,12 +19,12 @@ function setMap(){
       .attr("width", width)
       .attr("height", height);
 
-      //create Albers equal area conic projection centered on Chicago
+  //create Albers equal area conic projection centered on Chicago
   var projection = d3.geoAlbers()
-        .center([-86.75, 41.855])
-        .rotate([1,0])
-        .parallels([-87.36, 42.33])
-        .scale(69000)
+        .center([8.25, 41.88205])
+        .rotate([92.35,0.5,-4])
+        .parallels([40,45])
+        .scale(118000)
         .translate([width / 2, height / 2]);
 
   var path = d3.geoPath()
