@@ -171,7 +171,7 @@ function setChart(csvData, colorScale){
   // set the dimensions and margins of the graph
   var margin = {top: 20, right: 10, bottom: 60, left: 60};
   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
-      height = 700 - margin.left - margin.right,
+      height = (window.innerHeight) - margin.left - margin.right,
       leftPadding = 25,
       rightPadding = 2,
       topBottomPadding = 25,
@@ -188,7 +188,7 @@ function setChart(csvData, colorScale){
   var chartBackground = chart.append("rect")
       .attr("class", "chartBackground")
       .attr("width", chartInnerWidth)
-      .attr("height", chartInnerHeight)
+      .attr("height", height)
       .attr("transform", translate);
   var yScale = d3.scaleLinear()
             .range([height, 0])
@@ -196,11 +196,6 @@ function setChart(csvData, colorScale){
   var xScale = d3.scaleLinear()
             .range([width, 0])
             .domain([1, 0]);
-  var chartFrame = chart.append("rect")
-      .attr("class", "chartFrame")
-      .attr("width", chartInnerWidth)
-      .attr("height", chartInnerHeight)
-      .attr("transform", translate);
     // Add X axis
     var x = d3.scaleLinear()
       .domain([0, 1])
@@ -217,14 +212,18 @@ function setChart(csvData, colorScale){
         .attr("cx", function (d) { return x(d[expressed]); } )
         .attr("cy", function (d) { return y(d[compared]); } )
         .attr("r", 2.5)
+        .attr("class", function(d){
+            return "tract " + d.name10
+          })
         .style("fill", function(d){
           return colorScale(d[expressed])
-        });
+          })
+      .attr("transform", translate);
     var chartTitle = chart.append("text")
         .attr("x", 40)
         .attr("y", 20)
         .attr("class", "chartTitle")
-        .text(compared + " Houses vs " + expressed + " Coefficient");
+        .text(compared + " Houses (Y) vs " + expressed + " Coefficient (X)");
         //create vertical axis generator
     var yAxis = d3.axisLeft()
         .scale(yScale);
@@ -234,7 +233,7 @@ function setChart(csvData, colorScale){
     var yAx = chart.append("g")
         .attr("class", "axis")
         .attr("transform", translate)
-        .call(yAxis);
+        .call(yAxis)
     var xAx = chart.append("g")
             .attr("class", "axis")
             .attr("transform", translate)
