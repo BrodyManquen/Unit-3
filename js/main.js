@@ -52,7 +52,12 @@ function setMap(){
     var base = map.append("path") //US State basemap
         .datum(ilBase)
         .attr("class", "base")
-        .attr("d", path);
+        .attr("d", path)
+    var mapTitle = map.append("text")  //map Title
+        .attr("x", 40)
+        .attr("y", 20)
+        .attr("class", "mapTitle")
+        .text("Gini Coefficient in each Chicago Census Tract");
     var indiana = map.append("path") //US State basemap
             .datum(indBase)
             .attr("class", "base")
@@ -165,9 +170,8 @@ function makeColorScale(data){
   colorScale.domain(minmax);
   return colorScale;  //sets colorScale
 };
-//create coordianted bar chart
+//create scatterplot comparing %houses rented to Gini Coefficient
 function setChart(csvData, colorScale){
-
   // set the dimensions and margins of the graph
   var margin = {top: 20, right: 10, bottom: 60, left: 60};
   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
@@ -184,48 +188,52 @@ function setChart(csvData, colorScale){
     .attr("width", width)
     .attr("height", height)
     .attr("class", "chart");
-    //create a rectangle for chart background fill
+  //create a rectangle for chart background fill
   var chartBackground = chart.append("rect")
       .attr("class", "chartBackground")
       .attr("width", chartInnerWidth)
       .attr("height", height)
       .attr("transform", translate);
-  var yScale = d3.scaleLinear()
+  var yScale = d3.scaleLinear() //y scale for axis
             .range([height, 0])
             .domain([0, 1]);
-  var xScale = d3.scaleLinear()
+  var xScale = d3.scaleLinear() //x scale for axis
             .range([width, 0])
             .domain([1, 0]);
     // Add X axis
-    var x = d3.scaleLinear()
+    var x = d3.scaleLinear()  //x range
       .domain([0, 1])
       .range([ 0, width ])
     // Add Y axis
-    var y = d3.scaleLinear()
+    var y = d3.scaleLinear()  //y range
       .domain([0, 1])
       .range([ height, 0]);
-    // Add dots
+    // Add dots for Scatterplot
     var dots = chart.selectAll(".dot")
       .data(csvData)
       .enter()
       .append("circle")
-        .attr("cx", function (d) { return x(d[expressed]); } )
-        .attr("cy", function (d) { return y(d[compared]); } )
-        .attr("r", 2.5)
+        .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
+        .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+        .attr("r", 2.5)  //controls size of dots
         .attr("class", function(d){
-            return "tract " + d.name10
+            return "tract " + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
           })
         .style("fill", function(d){
-          return colorScale(d[expressed])
-          })
+            var value = d[expressed];
+            if(value) {
+              return colorScale(d[expressed]);
+            } else {
+              return "#ccc";
+            }})
       .attr("transform", translate);
-    var chartTitle = chart.append("text")
+    var chartTitle = chart.append("text")  //chart Title
         .attr("x", 40)
         .attr("y", 20)
         .attr("class", "chartTitle")
         .text(compared + " Houses (Y) vs " + expressed + " Coefficient (X)");
         //create vertical axis generator
-    var yAxis = d3.axisLeft()
+    var yAxis = d3.axisLeft()  //4 variables to finish axes
         .scale(yScale);
     var xAxis = d3.axisBottom()
         .scale(xScale);
