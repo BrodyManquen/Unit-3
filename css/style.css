@@ -55,6 +55,12 @@
   font-size: 1.5em;
   font-weight: normal;
 }
+.mapTitle {
+  font-family: serif;
+  font-size: 1.5em;
+  font-weight: normal;
+  fill: #cbc9e2;
+}
 .chartFrame {
     fill: none;
     stroke: #999;
