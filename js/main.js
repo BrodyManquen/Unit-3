@@ -3,9 +3,9 @@
 //First line of main.js...wrap everything in a self-executing anonymous function to move to local scope
 (function(){
 //pseudo-global variables
-var attrArray = ["OwnPercent", "%Rented","Gini"]; //list of attributes
-var expressed = attrArray[2]; //initial attribute
-var compared = attrArray[1]
+var attrArray = ["% Houses Owned", "% Houses Rented","Gini Coefficient", "% White", "% Black", "% Asian", "% Hispanic"]; //list of attributes
+var expressed = attrArray[1]; //initial attribute
+var compared = attrArray[2]
 window.onload = setMap();
 
 function setMap(){
@@ -57,7 +57,7 @@ function setMap(){
         .attr("x", 40)
         .attr("y", 20)
         .attr("class", "mapTitle")
-        .text("Gini Coefficient in each Chicago Census Tract");
+        .text(expressed + " in each Chicago Census Tract");
     var indiana = map.append("path") //US State basemap
             .datum(indBase)
             .attr("class", "base")
@@ -70,6 +70,8 @@ function setMap(){
     setEnumerationUnits(chicago, map, path, colorScale);
     //addChart
     setChart(csvData, colorScale);
+    createDropdown(csvData);
+
   };
 };
 //creates Map graticule
@@ -122,7 +124,7 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     .enter()
     .append("path")
     .attr("class", function(d){
-        return "tract " + d.properties.name10;  //names after census tract
+        return "tract" + d.properties.name10;  //names after census tract
     })
     .attr("d", path)
     .style("fill", function(d){
@@ -132,7 +134,18 @@ function setEnumerationUnits(chicago, map, path, colorScale){
       } else {
         return "#ccc";
       }
-    });
+    })
+    .on("mouseover", function(d){
+      highlight(d.properties);
+    })
+    .on("mousemove", setLabel)
+    .on("mousemove", moveLabel)
+    .on("mouseout", function(d){
+        dehighlight(d.properties);
+    var desc = tract.append("desc")
+      .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+
+      })
 };
 //function to create color scale Generator
 function makeColorScale(data){
@@ -145,22 +158,6 @@ function makeColorScale(data){
   //create color scale Generator
   var colorScale = d3.scaleQuantile()
     .range(colorClasses);
-//Natural Breaks -- does not look as meaningful as Quantile
-                  //  var domainArray = [];
-                  //  for (var i=0; i<data.length;i++){
-                  //    var val = parseFloat(data[i][expressed]);
-                  //    domainArray.push(val);
-                  //  };
-                  //cluster data using ckmeans clustering
-                  //  var clusters = ss.ckmeans(domainArray, 4);
-                  //reset domain array to cluster mins
-                  //  domainArray = clusters.map(function(d){
-                  //    return d3.min(d);
-                  //  });
-                    //move first val from domain
-                    //domainArray.shift();
-                  //  colorScale.domain(domainArray);
-                  //  return colorScale;
 //build two-value array of minimum and maximum expressed attribute values
   var minmax = [
       d3.min(data, function(d) { return parseFloat(d[expressed]); }),
@@ -213,11 +210,11 @@ function setChart(csvData, colorScale){
       .data(csvData)
       .enter()
       .append("circle")
-        .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
-        .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+        .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as Y
+        .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as X
         .attr("r", 2.5)  //controls size of dots
         .attr("class", function(d){
-            return "tract " + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
+            return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
           })
         .style("fill", function(d){
             var value = d[expressed];
@@ -226,12 +223,16 @@ function setChart(csvData, colorScale){
             } else {
               return "#ccc";
             }})
-      .attr("transform", translate);
+      .attr("transform", translate)
+      .on("mouseover", highlight)
+      .on("mousemove", setLabel)
+      .on("mousemove", moveLabel)
+      .on("mouseout", dehighlight);
     var chartTitle = chart.append("text")  //chart Title
         .attr("x", 40)
         .attr("y", 20)
         .attr("class", "chartTitle")
-        .text(compared + " Houses (Y) vs " + expressed + " Coefficient (X)");
+        .text(compared + " (Y) vs " + expressed + " (X)");
         //create vertical axis generator
     var yAxis = d3.axisLeft()  //4 variables to finish axes
         .scale(yScale);
@@ -248,4 +249,192 @@ function setChart(csvData, colorScale){
             .call(xAxis);
 
 }
+//Example 1.1 line 1...function to create a dropdown menu for attribute selection
+function createDropdown(csvData){
+    var dropdown = d3.select("body")
+        .append("select")
+        .attr("class", "dropdown")
+        .on("change", function(){
+            changeAttribute(this.value, csvData)
+        });
+        //add initial option
+    var titleOption = dropdown.append("option")
+            .attr("class", "titleOption")
+            .attr("disabled", "true")
+            .text("Select Attribute");
+
+        //add attribute name options
+    var attrOptions = dropdown.selectAll("attrOptions")
+            .data(attrArray)
+            .enter()
+            .append("option")
+            .attr("value", function(d){ return d })
+            .text(function(d){ return d });
+};
+//dropdown change listener handler
+function changeAttribute(attribute, csvData){
+    //change the expressed attribute
+    expressed = attribute;
+//set chart
+    var chart = d3.select("svg");
+    //recreate the color scale
+    var colorScale = makeColorScale(csvData);
+    //recolor enumeration units
+    var tracts = d3.selectAll(".tract")
+        .transition()
+        .duration(1000)
+        .style("fill", function(d){
+            var value = (d.properties[expressed]);
+            if(value) {
+            	return colorScale(value);
+            } else {
+            	return "#ddd";
+            }
+    });
+    var mapTitle = d3.select(".mapTitle")
+      .attr("class", "mapTitle")
+      .text(expressed + " in each Chicago Census Tract");
+   var margin = {top: 20, right: 10, bottom: 60, left: 60};
+   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
+            height = (window.innerHeight) - margin.left - margin.right,
+            leftPadding = 25,
+            rightPadding = 2,
+            topBottomPadding = 25,
+            chartInnerWidth = width - leftPadding - rightPadding,
+            chartInnerHeight = height - topBottomPadding * 2,
+            translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
+   var x = d3.scaleLinear()  //x range
+          .domain([0, 1])
+          .range([ 0, width ])
+        // Add Y axis
+    var y = d3.scaleLinear()  //y range
+          .domain([0, 1])
+          .range([ height, 0]);
+    var dots = d3.selectAll(".dot")
+    .data(csvData)
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
+      .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+      .attr("r", 2.5)  //controls size of dots
+      .attr("class", function(d){
+          return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
+        })
+      .style("fill", function(d){
+          var value = d[expressed];
+          if(value) {
+            return colorScale(value);
+          } else {
+            return "#ccc";
+          }});
+    updateChart(dots, csvData.length, colorScale);
+
+};
+function updateChart(dots, n, colorScale){
+  //position dots
+  var chart = d3.select(".chart");
+  var margin = {top: 20, right: 10, bottom: 60, left: 60};
+  var width = (window.innerWidth * 0.425) - margin.left - margin.right,
+           height = (window.innerHeight) - margin.left - margin.right,
+           leftPadding = 25,
+           rightPadding = 2,
+           topBottomPadding = 25,
+           chartInnerWidth = width - leftPadding - rightPadding,
+           chartInnerHeight = height - topBottomPadding * 2,
+           translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
+  var x = d3.scaleLinear()  //x range
+         .domain([0, 1])
+         .range([ 0, width ])
+       // Add Y axis
+   var y = d3.scaleLinear()  //y range
+         .domain([0, 1])
+         .range([ height, 0]);
+  var dots = d3.selectAll(".dot")
+  .data(csvData)
+  .enter()
+  .append("circle")
+    .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
+    .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+    .attr("r", 2.5)  //controls size of dots
+    .attr("class", function(d){
+        return "tract " + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
+      })
+    .style("fill", function(d){
+        var value = d[expressed];
+        if(value) {
+          return colorScale(d[expressed]);
+        } else {
+          return "#ccc";
+        }});
+  //dots.attr('x')
+  var chartTitle = chart.select(".chartTitle")
+    .attr("class", "chartTitle")
+    .text(compared + " (Y) vs " + expressed + " (X)");
+};
+//function to highlight enumeration units and bars
+function highlight(props){
+    //change stroke
+    var selected = d3.selectAll(".tract" + props.name10)
+        .style("stroke", "blue")
+        .style("stroke-width", "2");
+};
+//function to reset the element style on mouseout
+function dehighlight(props){
+    var selected = d3.selectAll(".tract" + props.name10)
+        .style("stroke", function(){
+            return getStyle(this, "stroke")
+        })
+        .style("stroke-width", function(){
+            return getStyle(this, "stroke-width")
+        });
+
+    function getStyle(element, styleName){
+        var styleText = d3.select(element)
+            .select("desc")
+            .text();
+
+        var styleObject = JSON.parse(styleText);
+
+        return styleObject[styleName];
+    };
+};
+//function to create dynamic label
+function setLabel(props){
+    //label content
+    var labelAttribute = "<h1>" + props[expressed] +
+        "</h1><b>" + expressed + "</b>";
+
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr("class", "infolabel")
+        .attr("id", props.name10 + "_label")
+        .html(labelAttribute);
+
+    var tractName = infolabel.append("div")
+        .attr("class", "labelname")
+        .html("tract"+props.name10);
+};
+function moveLabel(){
+    //get width of label
+    var labelWidth = d3.select(".infolabel")
+        .node()
+        .getBoundingClientRect()
+        .width;
+
+    //use coordinates of mousemove event to set label coordinates
+    var x1 = d3.event.clientX + 10,
+        y1 = d3.event.clientY - 75,
+        x2 = d3.event.clientX - labelWidth - 10,
+        y2 = d3.event.clientY + 25;
+
+    //horizontal label coordinate, testing for overflow
+    var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+    //vertical label coordinate, testing for overflow
+    var y = d3.event.clientY < 75 ? y2 : y1;
+
+    d3.select(".infolabel")
+        .style("left", x + "px")
+        .style("top", y + "px");
+};
 })();
