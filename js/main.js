@@ -124,7 +124,7 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     .enter()
     .append("path")
     .attr("class", function(d){
-        return "tract" + d.properties.name10;  //names after census tract
+        return "tract " + d.properties.name10;  //names after census tract
     })
     .attr("d", path)
     .style("fill", function(d){
@@ -275,58 +275,55 @@ function createDropdown(csvData){
 function changeAttribute(attribute, csvData){
     //change the expressed attribute
     expressed = attribute;
-//set chart
+    //set chart
     var chart = d3.select("svg");
+    var map = d3.select("map");
     //recreate the color scale
     var colorScale = makeColorScale(csvData);
     //recolor enumeration units
     var tracts = d3.selectAll(".tract")
-        .transition()
-        .duration(1000)
+        //.transition()
+        //.duration(1000)
         .style("fill", function(d){
-            var value = (d.properties[expressed]);
+            if(d[expressed]){
+              var val2 = d[expressed];
+            } else if(d.properties[expressed]) {
+              var value = (d.properties[expressed]);
+            }
             if(value) {
             	return colorScale(value);
+            } else if(val2) {
+            	return colorScale(val2);
             } else {
-            	return "#ddd";
+              return "#ccc";
             }
     });
     var mapTitle = d3.select(".mapTitle")
       .attr("class", "mapTitle")
       .text(expressed + " in each Chicago Census Tract");
-   var margin = {top: 20, right: 10, bottom: 60, left: 60};
-   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
-            height = (window.innerHeight) - margin.left - margin.right,
-            leftPadding = 25,
-            rightPadding = 2,
-            topBottomPadding = 25,
-            chartInnerWidth = width - leftPadding - rightPadding,
-            chartInnerHeight = height - topBottomPadding * 2,
-            translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
-   var x = d3.scaleLinear()  //x range
-          .domain([0, 1])
-          .range([ 0, width ])
-        // Add Y axis
-    var y = d3.scaleLinear()  //y range
-          .domain([0, 1])
-          .range([ height, 0]);
-    var dots = d3.selectAll(".dot")
-    .data(csvData)
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
-      .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+    var dots = chart.selectAll(".tract")
+      .append("circle")
+      console.log('salve')
+     .sort("y", function (d) { return y(d.properties[compared]); } )
       .attr("r", 2.5)  //controls size of dots
       .attr("class", function(d){
           return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
         })
       .style("fill", function(d){
-          var value = d[expressed];
+            console.log(d)
+          if(d[expressed]){
+              var val2 = d[expressed];
+          } else if(d.properties[expressed]) {
+              var value = (d.properties[expressed]);
+            }
           if(value) {
-            return colorScale(value);
+            	return colorScale(value);
+          } else if(val2) {
+            	return colorScale(val2);
           } else {
-            return "#ccc";
-          }});
+              return "#ccc";
+          }
+    });
     updateChart(dots, csvData.length, colorScale);
 
 };
@@ -374,13 +371,13 @@ function updateChart(dots, n, colorScale){
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll(".tract" + props.name10)
+    var selected = d3.selectAll(".tract " + props.name10)
         .style("stroke", "blue")
         .style("stroke-width", "2");
 };
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll(".tract" + props.name10)
+    var selected = d3.selectAll("."+props.name10)
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
