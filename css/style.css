@@ -34,7 +34,7 @@
     fill: #D5E3FF;
 }
 .chartBackground {
-    fill: rgba(128,128,128,.2);
+    fill: #bbb;
 }
 .textBox {
     fill: rgba(128,128,128,.2);
@@ -61,6 +61,12 @@
 .mapTitle {
   font-family: serif;
   font-size: 1.5em;
+  font-weight: normal;
+  fill: #eee;
+}
+.source {
+  font-family: serif;
+  font-size: 1em;
   font-weight: normal;
   fill: #eee;
 }
