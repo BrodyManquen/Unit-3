@@ -142,7 +142,7 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     .on("mouseout", function(d){
         dehighlight(d.properties);
     var desc = tract.append("desc")
-      .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+      .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
 
       })
 };
@@ -297,9 +297,15 @@ function changeAttribute(attribute, csvData){
     var mapTitle = d3.select(".mapTitle")
       .attr("class", "mapTitle")
       .text(expressed + " in each Chicago Census Tract");
-   var margin = {top: 20, right: 10, bottom: 60, left: 60};
-   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
-        height = (window.innerHeight) - margin.left - margin.right;
+      var margin = {top: 20, right: 10, bottom: 60, left: 60};
+      var width = (window.innerWidth * 0.425) - margin.left - margin.right,
+          height = (window.innerHeight) - margin.left - margin.right,
+          leftPadding = 25,
+          rightPadding = 2,
+          topBottomPadding = 25,
+          chartInnerWidth = width - leftPadding - rightPadding,
+          chartInnerHeight = height - topBottomPadding * 2,
+          translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
    var x = d3.scaleLinear()  //x range
           .domain([0, 1])
           .range([ 0, width ])
@@ -313,6 +319,7 @@ function changeAttribute(attribute, csvData){
     .append("circle")
     .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
     .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
+    .attr("transform", translate)
     .attr("r", 2.5)  //controls size of dots
     .attr("class", function(d){
           return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
@@ -324,6 +331,14 @@ function changeAttribute(attribute, csvData){
         } else {
           return "#ccc";
         }})
+    .on("mouseover", highlight)
+    .on("mousemove", setLabel)
+    .on("mousemove", moveLabel)
+    .on("mouseout", dehighlight);
+    var remove = d3.select('chart').selectAll('circle')
+      .data(csvData, function(d) {return d;})
+      .exit()
+      .remove()
     var chartTitle = chart.select(".chartTitle")
           .attr("class", "chartTitle")
           .text(compared + " (Y) vs " + expressed + " (X)");
@@ -331,8 +346,8 @@ function changeAttribute(attribute, csvData){
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll(".tract" + props.name10)
-        .style("stroke", "red")
+    var selected = d3.selectAll(".tract"+props.name10)
+        .style("stroke", "purple")
         .style("stroke-width", "2");
    setLabel(props);
 };
