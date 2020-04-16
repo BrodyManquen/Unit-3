@@ -19,7 +19,6 @@ function setMap(){
       .attr("class", "map")
       .attr("width", width)
       .attr("height", height);
-
   //create Albers equal area conic projection centered on Chicago
   var projection = d3.geoAlbers()
         .center([8.25, 41.88205])
@@ -276,14 +275,14 @@ function changeAttribute(attribute, csvData){
     //change the expressed attribute
     expressed = attribute;
     //set chart
-    var chart = d3.select("svg");
+    var chart = d3.select(".chart");
     var map = d3.select("map");
     //recreate the color scale
     var colorScale = makeColorScale(csvData);
     //recolor enumeration units
     var tracts = d3.selectAll(".tract")
-        //.transition()
-        //.duration(1000)
+        .transition()
+        .duration(750)
         .style("fill", function(d){
             var val2 = d[expressed];
             var value = (d.properties[expressed]);
@@ -300,13 +299,7 @@ function changeAttribute(attribute, csvData){
       .text(expressed + " in each Chicago Census Tract");
    var margin = {top: 20, right: 10, bottom: 60, left: 60};
    var width = (window.innerWidth * 0.425) - margin.left - margin.right,
-            height = (window.innerHeight) - margin.left - margin.right,
-            leftPadding = 25,
-            rightPadding = 2,
-            topBottomPadding = 25,
-            chartInnerWidth = width - leftPadding - rightPadding,
-            chartInnerHeight = height - topBottomPadding * 2,
-            translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
+        height = (window.innerHeight) - margin.left - margin.right;
    var x = d3.scaleLinear()  //x range
           .domain([0, 1])
           .range([ 0, width ])
@@ -314,74 +307,34 @@ function changeAttribute(attribute, csvData){
     var y = d3.scaleLinear()  //y range
           .domain([0, 1])
           .range([ height, 0]);
-    var dots = d3.selectAll(".dot")
+    var dots = chart.selectAll(".tract")
     .data(csvData)
     .enter()
     .append("circle")
-      .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
-      .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
-      .attr("r", 2.5)  //controls size of dots
-      .attr("class", function(d){
-          return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
-        })
-      .style("fill", function(d){
-          var value = d[expressed];
-          if(value) {
-            return colorScale(value);
-          } else {
-            return "#ccc";
-          }});
-    updateChart(dots, csvData.length, colorScale);
-
-};
-function updateChart(dots, n, colorScale){
-  //position dots
-  var chart = d3.select(".chart");
-  var margin = {top: 20, right: 10, bottom: 60, left: 60};
-  var width = (window.innerWidth * 0.425) - margin.left - margin.right,
-           height = (window.innerHeight) - margin.left - margin.right,
-           leftPadding = 25,
-           rightPadding = 2,
-           topBottomPadding = 25,
-           chartInnerWidth = width - leftPadding - rightPadding,
-           chartInnerHeight = height - topBottomPadding * 2,
-           translate = "translate(" + leftPadding + "," + topBottomPadding + ")"
-  var x = d3.scaleLinear()  //x range
-         .domain([0, 1])
-         .range([ 0, width ])
-       // Add Y axis
-   var y = d3.scaleLinear()  //y range
-         .domain([0, 1])
-         .range([ height, 0]);
-  var dots = d3.selectAll(".dot")
-  .data(csvData)
-  .enter()
-  .append("circle")
     .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
     .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
     .attr("r", 2.5)  //controls size of dots
     .attr("class", function(d){
-        return "tract " + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
+          return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
       })
     .style("fill", function(d){
-        var value = d[expressed];
+      var value = d[expressed];
         if(value) {
-          return colorScale(d[expressed]);
+          return colorScale(value);
         } else {
           return "#ccc";
-        }});
-  //dots.attr('x')
-  var chartTitle = chart.select(".chartTitle")
-    .attr("class", "chartTitle")
-    .text(compared + " (Y) vs " + expressed + " (X)");
+        }})
+    var chartTitle = chart.select(".chartTitle")
+          .attr("class", "chartTitle")
+          .text(compared + " (Y) vs " + expressed + " (X)");
 };
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll("tract" + props.name10)
-        .style("stroke", "blue")
+    var selected = d3.selectAll(".tract" + props.name10)
+        .style("stroke", "red")
         .style("stroke-width", "2");
-    setLabel(props);
+   setLabel(props);
 };
 //function to reset the element style on mouseout
 function dehighlight(props){

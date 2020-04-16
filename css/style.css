@@ -36,6 +36,9 @@
 .chartBackground {
     fill: rgba(128,128,128,.2);
 }
+.textBox {
+    fill: rgba(128,128,128,.2);
+}
 .map {
     background: #D5E3FF;
     border: medium solid #999;
@@ -58,6 +61,12 @@
 .mapTitle {
   font-family: serif;
   font-size: 1.5em;
+  font-weight: normal;
+  fill: #eee;
+}
+.mapText {
+  font-family: serif;
+  font-size: 1.0em;
   font-weight: normal;
   fill: #eee;
 }
