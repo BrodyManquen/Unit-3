@@ -5,7 +5,8 @@
 //pseudo-global variables
 var attrArray = ["% Houses Owned", "% Houses Rented","Gini Coefficient", "% White", "% Black", "% Asian", "% Hispanic"]; //list of attributes
 var expressed = attrArray[1]; //initial attribute
-var compared = attrArray[2]
+var compared = attrArray[2];
+
 window.onload = setMap();
 
 function setMap(){
@@ -57,6 +58,11 @@ function setMap(){
         .attr("y", 20)
         .attr("class", "mapTitle")
         .text(expressed + " in each Chicago Census Tract");
+    var source = map.append("text")
+        .attr("x", 185)
+        .attr("y", 785)
+        .attr("class", "source")
+        .text("Data Source: https://data.census.gov/cedsci ; Geography Source : https://data.cityofchicago.org")
     var indiana = map.append("path") //US State basemap
             .datum(indBase)
             .attr("class", "base")
@@ -123,28 +129,27 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     .enter()
     .append("path")
     .attr("class", function(d){
-        return "tract " + d.properties.name10;  //names after census tract
+        return "tract" + d.properties.name10;  //names after census tract
     })
     .attr("d", path)
     .style("fill", function(d){
       var value = d.properties[expressed];
       if (value){
-        return colorScale(d.properties[expressed]);
+        return colorScale(d.properties[expressed]); //initial Enumeration Unit styles
       } else {
         return "#ccc";
-      }
+      };
+      var desc = tract.append("desc")
+        .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
     })
-    .on("mouseover", function(d){
+    .on("mousemove", setLabel) //sets and moves Labels on move
+    .on("mousemove", moveLabel)
+    .on("mouseover", function(d){ //highlights on mouseover
       highlight(d.properties);
     })
-    .on("mousemove", setLabel)
-    .on("mousemove", moveLabel)
     .on("mouseout", function(d){
         dehighlight(d.properties);
-    var desc = tract.append("desc")
-      .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
-
-      })
+      });
 };
 //function to create color scale Generator
 function makeColorScale(data){
@@ -169,7 +174,7 @@ function makeColorScale(data){
 //create scatterplot comparing %houses rented to Gini Coefficient
 function setChart(csvData, colorScale){
   // set the dimensions and margins of the graph
-  var margin = {top: 20, right: 10, bottom: 60, left: 60};
+  var margin = {top: 20, right: 10, bottom: 60, left: 60};  //sets feature margin and bounds
   var width = (window.innerWidth * 0.425) - margin.left - margin.right,
       height = (window.innerHeight) - margin.left - margin.right,
       leftPadding = 25,
@@ -205,25 +210,28 @@ function setChart(csvData, colorScale){
       .domain([0, 1])
       .range([ height, 0]);
     // Add dots for Scatterplot
-    var dots = chart.selectAll(".dot")
+    var dots = chart.selectAll(".dot") //creates dots in chart
       .data(csvData)
       .enter()
       .append("circle")
-        .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as Y
-        .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as X
+        .attr("cx", function (d) { return x(d[expressed]); } ) //sets current Expressed as X
+        .attr("cy", function (d) { return y(d[compared]); } )  //sets Gini as Y
         .attr("r", 2.5)  //controls size of dots
         .attr("class", function(d){
             return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
           })
-        .style("fill", function(d){
+        .style("fill", function(d){  //sets Dot Colors to colorScale
             var value = d[expressed];
             if(value) {
               return colorScale(d[expressed]);
             } else {
               return "#ccc";
-            }})
+            };
+            var desc = tract.append("desc")
+              .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
+          })
       .attr("transform", translate)
-      .on("mouseover", highlight)
+      .on("mouseover", highlight) //creates MouseOver, MouseMove, and MouseOut listeners
       .on("mousemove", setLabel)
       .on("mousemove", moveLabel)
       .on("mouseout", dehighlight);
@@ -297,8 +305,8 @@ function changeAttribute(attribute, csvData){
     var mapTitle = d3.select(".mapTitle") //Update title of Map
       .attr("class", "mapTitle")
       .text(expressed + " in each Chicago Census Tract");
-      var margin = {top: 20, right: 10, bottom: 60, left: 60};
-      var width = (window.innerWidth * 0.425) - margin.left - margin.right,
+    var margin = {top: 20, right: 10, bottom: 60, left: 60};  //feature bounds and margin
+    var width = (window.innerWidth * 0.425) - margin.left - margin.right,
           height = (window.innerHeight) - margin.left - margin.right,
           leftPadding = 25,
           rightPadding = 2,
@@ -315,7 +323,7 @@ function changeAttribute(attribute, csvData){
           .range([ height, 0]);
     d3.selectAll("circle") //removes all dots in Scatterplot so that chart can be updated
       .remove();
-    var dots = chart.selectAll(".tract")
+    var dots = chart.selectAll(".tract")  //updates Dots
       .data(csvData)
       .enter()
       .append("circle")
@@ -326,7 +334,7 @@ function changeAttribute(attribute, csvData){
       .attr("class", function(d){
             return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
         })
-      .style("fill", function(d){
+      .style("fill", function(d){ //updated Dot colorScale
         var value = d[expressed]
         if(value) {
             return colorScale(value);
@@ -336,12 +344,7 @@ function changeAttribute(attribute, csvData){
       .on("mouseover", highlight)
       .on("mousemove", setLabel)
       .on("mousemove", moveLabel)
-      .on("mouseout", dehighlight)
-      .exit().remove();
-    var remove = d3.select('chart').selectAll('circle')
-      .data(csvData, function(d) {return d;})
-      .exit()
-      .remove()
+      .on("mouseout", dehighlight);
     var chartTitle = chart.select(".chartTitle")
           .attr("class", "chartTitle")
           .text(compared + " (Y) (Low Gini: Low Inequality) vs " + expressed + " (X)");
@@ -349,14 +352,14 @@ function changeAttribute(attribute, csvData){
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll(".tract"+props.name10)  //won't select this even though proper name?
+    var selected = d3.selectAll(".tract"+props.name10)  //selects tracts
         .style("stroke", "purple")
         .style("stroke-width", "2");
-   setLabel(props);
+   setLabel(props); //sets Label from props of each selected Tract
 };
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll("tract" + props.name10) //won't select this even though proper name?
+    var highlighted = d3.selectAll("tract"+props.name10) //won't select this even though proper name? won't work if use ' '".tract"+props.name10' either...
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
@@ -380,17 +383,17 @@ function setLabel(props){
       var labelAttribute = "<h1>" + props[expressed] +
         "</h1><b>" + expressed + "</b>";
       }else{
-        var labelAttribute = "<h1>" + Math.round(props[expressed]*100) +
+        var labelAttribute = "<h1>" + Math.round(props[expressed]*100) +  //sets Label and multiplies by 100 to show proper percentages
           "</h1><b>" + expressed + "</b>";
       };
     //create info label div
-    var infolabel = d3.select("body")
+    var infolabel = d3.select("body") //creates infolabel for dynamic label
         .append("div")
         .attr("class", "infolabel")
         .attr("id", props.name10 + "_label")
         .html(labelAttribute);
 
-    var tractName = infolabel.append("div")
+    var tractName = infolabel.append("div") //creates tract name
         .attr("class", "labelname")
         .html("Tract "+props.name10);
 };
