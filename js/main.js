@@ -231,7 +231,7 @@ function setChart(csvData, colorScale){
         .attr("x", 40)
         .attr("y", 20)
         .attr("class", "chartTitle")
-        .text(compared + " (Y) vs " + expressed + " (X)");
+        .text(compared + " (Y) (Low Gini: Low Inequality) vs " + expressed + " (X)");
         //create vertical axis generator
     var yAxis = d3.axisLeft()  //4 variables to finish axes
         .scale(yScale);
@@ -274,7 +274,7 @@ function createDropdown(csvData){
 function changeAttribute(attribute, csvData){
     //change the expressed attribute
     expressed = attribute;
-    //set chart
+    //set chart and map
     var chart = d3.select(".chart");
     var map = d3.select("map");
     //recreate the color scale
@@ -285,16 +285,16 @@ function changeAttribute(attribute, csvData){
         .duration(750)
         .style("fill", function(d){
             var val2 = d[expressed];
-            var value = (d.properties[expressed]);
-            if(value) {
-            	return colorScale(value);
-            } else if(val2) {
-            	return colorScale(val2);
-            } else {
-              return "#ccc"
-            }
+            var value = (d.properties[expressed]); //two variables because some Objects have no properties, just raw Keys
+         if(value) {
+            return colorScale(value);
+         } else if(val2) {
+            return colorScale(val2);
+         } else {
+            return "#ccc"
+          }
     });
-    var mapTitle = d3.select(".mapTitle")
+    var mapTitle = d3.select(".mapTitle") //Update title of Map
       .attr("class", "mapTitle")
       .text(expressed + " in each Chicago Census Tract");
       var margin = {top: 20, right: 10, bottom: 60, left: 60};
@@ -313,54 +313,57 @@ function changeAttribute(attribute, csvData){
     var y = d3.scaleLinear()  //y range
           .domain([0, 1])
           .range([ height, 0]);
+    d3.selectAll("circle") //removes all dots in Scatterplot so that chart can be updated
+      .remove();
     var dots = chart.selectAll(".tract")
-    .data(csvData)
-    .enter()
-    .append("circle")
-    .attr("cx", function (d) { return x(d[expressed]); } ) //sets Gini as X
-    .attr("cy", function (d) { return y(d[compared]); } )  //sets %Rent as Y
-    .attr("transform", translate)
-    .attr("r", 2.5)  //controls size of dots
-    .attr("class", function(d){
-          return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
-      })
-    .style("fill", function(d){
-      var value = d[expressed];
+      .data(csvData)
+      .enter()
+      .append("circle")
+      .attr("cx", function (d) { return x(d[expressed]); } ) //sets expressed variable as X
+      .attr("cy", function (d) { return y(d[compared]); } )  //sets Gini as Y
+      .attr("transform", translate)
+      .attr("r", 2.5)  //controls size of dots
+      .attr("class", function(d){
+            return "tract" + d.name10  //gives each dot the name of associated tract -- not added to graph for clarity
+        })
+      .style("fill", function(d){
+        var value = d[expressed]
         if(value) {
-          return colorScale(value);
-        } else {
-          return "#ccc";
-        }})
-    .on("mouseover", highlight)
-    .on("mousemove", setLabel)
-    .on("mousemove", moveLabel)
-    .on("mouseout", dehighlight);
+            return colorScale(value);
+          } else {
+            return "#ccc";
+          }})
+      .on("mouseover", highlight)
+      .on("mousemove", setLabel)
+      .on("mousemove", moveLabel)
+      .on("mouseout", dehighlight)
+      .exit().remove();
     var remove = d3.select('chart').selectAll('circle')
       .data(csvData, function(d) {return d;})
       .exit()
       .remove()
     var chartTitle = chart.select(".chartTitle")
           .attr("class", "chartTitle")
-          .text(compared + " (Y) vs " + expressed + " (X)");
+          .text(compared + " (Y) (Low Gini: Low Inequality) vs " + expressed + " (X)");
 };
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll(".tract"+props.name10)
+    var selected = d3.selectAll(".tract"+props.name10)  //won't select this even though proper name?
         .style("stroke", "purple")
         .style("stroke-width", "2");
    setLabel(props);
 };
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll("tract" + props.name10)
+    var selected = d3.selectAll("tract" + props.name10) //won't select this even though proper name?
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
         .style("stroke-width", function(){
             return getStyle(this, "stroke-width")
         })
-        d3.select(".infolabel")
+    d3.select(".infolabel") //removes Dynamic Label
               .remove();
     function getStyle(element, styleName){
         var styleText = d3.select(element)
