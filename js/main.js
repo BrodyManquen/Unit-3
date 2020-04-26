@@ -164,9 +164,7 @@ function makeColorScale(data){
     .range(colorClasses);
 //build two-value array of minimum and maximum expressed attribute values
   var minmax = [
-      d3.min(data, function(d) {
-        console.log(data)
-        return parseFloat(d[expressed]); }),
+      d3.min(data, function(d) { return parseFloat(d[expressed]); }),
       d3.max(data, function(d) { return parseFloat(d[expressed]); })
   ];
 //assign array of expressed values as scale domain
@@ -235,7 +233,7 @@ function setChart(csvData, colorScale){
       .on("mousemove", setLabel)
       .on("mousemove", moveLabel)
       .on("mouseout", dehighlight);
-      var desc = tract.append("desc")
+      var desc = dots.append("desc")
         .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
     var chartTitle = chart.append("text")  //chart Title
         .attr("x", 40)
