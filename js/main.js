@@ -139,8 +139,6 @@ function setEnumerationUnits(chicago, map, path, colorScale){
       } else {
         return "#ccc";
       };
-      var desc = tract.append("desc")
-        .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
     })
     .on("mousemove", setLabel) //sets and moves Labels on move
     .on("mousemove", moveLabel)
@@ -150,6 +148,8 @@ function setEnumerationUnits(chicago, map, path, colorScale){
     .on("mouseout", function(d){
         dehighlight(d.properties);
       });
+      var desc = tract.append("desc")
+        .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
 };
 //function to create color scale Generator
 function makeColorScale(data){
@@ -164,7 +164,9 @@ function makeColorScale(data){
     .range(colorClasses);
 //build two-value array of minimum and maximum expressed attribute values
   var minmax = [
-      d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+      d3.min(data, function(d) {
+        console.log(data)
+        return parseFloat(d[expressed]); }),
       d3.max(data, function(d) { return parseFloat(d[expressed]); })
   ];
 //assign array of expressed values as scale domain
@@ -227,14 +229,14 @@ function setChart(csvData, colorScale){
             } else {
               return "#ccc";
             };
-            var desc = tract.append("desc")
-              .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
           })
       .attr("transform", translate)
       .on("mouseover", highlight) //creates MouseOver, MouseMove, and MouseOut listeners
       .on("mousemove", setLabel)
       .on("mousemove", moveLabel)
       .on("mouseout", dehighlight);
+      var desc = tract.append("desc")
+        .text('{"stroke": "#ccc", "stroke-width": "0.5px"}');
     var chartTitle = chart.append("text")  //chart Title
         .attr("x", 40)
         .attr("y", 20)
@@ -359,7 +361,7 @@ function highlight(props){
 };
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var highlighted = d3.selectAll("tract"+props.name10) //won't select this even though proper name? won't work if use ' '".tract"+props.name10' either...
+    var highlighted = d3.selectAll(".tract"+props.name10) //won't select this even though proper name? won't work if use ' '".tract"+props.name10' either...
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
